@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"gc2/helper"
 	"gc2/model"
 	"gc2/service"
 	"net/http"
@@ -9,7 +10,7 @@ import (
 )
 
 type LoanHandler struct {
-	LoanService service.LoanService
+	loanervice service.LoanService
 }
 
 func NewLoanHandler(ls service.LoanService) *LoanHandler {
@@ -25,11 +26,20 @@ func (h *LoanHandler) CreateLoan(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"message": "invalid input"})
 	}
 
-	user := c.Get("userData").(model.User)
+	userID, err := helper.ExtractUserID(c)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, map[string]string{"error": err.Error()})
+	}
 
-	loan, err := h.LoanService.Create(user.ID, req.BookID, req.Duration)
+	loan, err := h.loanervice.Create(userID, req.BookID, req.Duration)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "failed to create loan"})
 	}
-	return c.JSON(http.StatusCreated, loan)
+
+	response := model.LoanResponse{
+		StartDate: loan.StartDate,
+		DueDate:   loan.DueDate,
+		BookName:  loan.Book.Title,
+	}
+	return c.JSON(http.StatusCreated, response)
 }

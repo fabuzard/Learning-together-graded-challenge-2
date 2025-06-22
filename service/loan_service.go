@@ -7,7 +7,6 @@ import (
 
 type LoanService interface {
 	Create(userID, bookID uint, duration int) (*model.Loan, error)
-	FindByUserID(userID uint) ([]model.Loan, error)
 }
 
 type loanService struct {
@@ -20,8 +19,4 @@ func NewLoanService(repo repository.LoanRepository) LoanService {
 
 func (s *loanService) Create(userID, bookID uint, duration int) (*model.Loan, error) {
 	return s.repo.CreateLoan(userID, bookID, duration)
-}
-
-func (s *loanService) FindByUserID(userID uint) ([]model.Loan, error) {
-	return s.repo.FindByUserID(userID)
 }

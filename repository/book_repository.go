@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"gc2/config"
+	"fmt"
 	"gc2/model"
 
 	"gorm.io/gorm"
@@ -22,14 +22,24 @@ func NewBookRepository(db *gorm.DB) BookRepository {
 
 func (br *bookRepository) FindAll() ([]model.Book, error) {
 	var books []model.Book
-	err := config.DB.Preload("Genres").Preload("Author").Find(&books).Error
+	err := br.db.Preload("Genres").Preload("Author").Find(&books).Error
 	return books, err
 }
 
 func (br *bookRepository) FindByGenreID(genreID int) ([]model.Book, error) {
+	fmt.Println("DEBUG: Looking for books in genre ID:", genreID)
+
 	var books []model.Book
-	err := config.DB.Preload("Genres").Preload("Author").
+	err := br.db.
+		Preload("Genres").
+		Preload("Author").
 		Joins("JOIN book_genres ON book_genres.book_id = books.id").
-		Where("book_genres.genre_id = ?", genreID).Find(&books).Error
+		Where("book_genres.genre_id = ?", genreID).
+		Find(&books).Error
+
+	if err != nil {
+		fmt.Println("DEBUG: DB error:", err)
+	}
+	fmt.Println("DEBUG: Found", len(books), "books")
 	return books, err
 }

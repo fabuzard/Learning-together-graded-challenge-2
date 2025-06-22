@@ -32,7 +32,7 @@ func (r *userRepository) Create(user *model.User) error {
 
 func (r *userRepository) FindByID(id uint) (*model.User, error) {
 	var user model.User
-	err := r.db.Preload("Loans").First(&user, id).Error
+	err := r.db.Preload("Loans").Preload("Loans.Book").First(&user, id).Error
 	if err != nil {
 		return nil, err
 	}

@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"gc2/helper"
+	"gc2/model"
 	"gc2/service"
 	"net/http"
 	"os"
@@ -98,37 +100,35 @@ func (h *UserHandler) Login(c echo.Context) error {
 }
 
 func (h *UserHandler) Me(c echo.Context) error {
-	userToken, ok := c.Get("user").(*jwt.Token)
-	if !ok {
-		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Unauthorized"})
-	}
 
-	claims, ok := userToken.Claims.(jwt.MapClaims)
-	if !ok || !userToken.Valid {
-		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Invalid token"})
+	userID, err := helper.ExtractUserID(c)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, map[string]string{"error": err.Error()})
 	}
-
-	userIDFloat, ok := claims["user_id"].(float64)
-	if !ok {
-		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Invalid user_id in token"})
-	}
-
-	userID := uint(userIDFloat)
 	user, err := h.UserService.FindByID(userID)
 	log.Println("user_id from JWT:", userID)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, map[string]string{"error": "User not found"})
 	}
 
+	var loans []model.UserMeLoanResponse
+	for _, loan := range user.Loans {
+		loans = append(loans, model.UserMeLoanResponse{
+			BookTitle: loan.Book.Title,
+			StartDate: loan.StartDate,
+			DueDate:   loan.DueDate,
+		})
+	}
+
 	// Buat response custom biar password gak ikut ke-return
-	response := map[string]interface{}{
-		"id":            user.ID,
-		"first_name":    user.FirstName,
-		"last_name":     user.LastName,
-		"email":         user.Email,
-		"address":       user.Address,
-		"date_of_birth": user.DateOfBirth,
-		"loans":         user.Loans,
+	response := model.UserMeResponse{
+		ID:          user.ID,
+		FirstName:   user.FirstName,
+		LastName:    user.LastName,
+		Email:       user.Email,
+		Address:     user.Address,
+		DateOfBirth: user.DateOfBirth,
+		Loans:       loans,
 	}
 
 	return c.JSON(http.StatusOK, response)

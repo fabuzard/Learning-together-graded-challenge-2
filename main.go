@@ -32,19 +32,15 @@ func main() {
 	bookService := service.NewBookService(bookRepo)
 	bookHandler := handler.NewBookHandler(bookService)
 
-	// Basic ping route
+	// Loan
+	loanRepo := repository.NewLoanRepository(db)
+	loanService := service.NewLoanService(loanRepo)
+	loanHandler := handler.NewLoanHandler(loanService)
+
+	// Testing
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "🚀 Server running and DB connected!")
 	})
-
-	// // JWT protected routes
-	// 	jwtSecret := os.Getenv("JWT_SECRET")
-	// 	auth := e.Group("")
-	// 	auth.Use(middleware.JWTMiddleware(jwtSecret))
-
-	// 	auth.GET("/rentals", rentalHandler.GetAllRentals)
-	// 	auth.GET("/rentals/active", rentalHandler.GetActiveRentals)
-	// 	auth.GET("/vehicles/availability", vehicleHandler.GetAvailableVehicles)
 
 	// Group user
 	userGroup := e.Group("/users")
@@ -53,9 +49,13 @@ func main() {
 
 	userGroup.GET("/me", userHandler.Me, middleware.JWTMiddleware((os.Getenv("JWT_SECRET"))))
 
-	// Group
+	// Group book
 	bookGroup := e.Group("/books")
 	bookGroup.GET("", bookHandler.GetBooks)
+
+	// Group loan
+	loanGroup := e.Group("/loans")
+	loanGroup.POST("", loanHandler.CreateLoan, middleware.JWTMiddleware((os.Getenv("JWT_SECRET"))))
 
 	db.AutoMigrate(
 		&model.Author{},
