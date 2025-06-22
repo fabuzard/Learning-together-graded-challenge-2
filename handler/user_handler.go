@@ -1,3 +1,4 @@
+// Package handler contains the user-related routes and handlers
 package handler
 
 import (
@@ -21,15 +22,18 @@ func NewUserHandler(us service.UserService) *UserHandler {
 	return &UserHandler{us}
 }
 
+// Register godoc
+// @Summary Register a new user
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param request body model.RegisterRequest true "User register payload"
+// @Success 201 {object} map[string]interface{}
+// @Failure 400 {object} map[string]string
+// @Router /users/register [post]
+
 func (h *UserHandler) Register(c echo.Context) error {
-	var req struct {
-		FirstName   string `json:"first_name"`
-		LastName    string `json:"last_name"`
-		Address     string `json:"address"`
-		Email       string `json:"email"`
-		Password    string `json:"password"`
-		DateOfBirth string `json:"date_of_birth"`
-	}
+	var req model.RegisterRequest
 	if err := c.Bind(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"message": "invalid input"})
 	}

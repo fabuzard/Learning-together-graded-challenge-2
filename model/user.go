@@ -11,3 +11,12 @@ type User struct {
 	Role        string `gorm:"default:user" json:"role"`
 	Loans       []Loan `gorm:"foreignKey:UserID"`
 }
+
+type RegisterRequest struct {
+	FirstName   string `json:"first_name"`
+	LastName    string `json:"last_name"`
+	Address     string `json:"address"`
+	Email       string `json:"email"`
+	Password    string `json:"password"`
+	DateOfBirth string `json:"date_of_birth"`
+}

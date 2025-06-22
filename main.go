@@ -1,3 +1,10 @@
+// @title GC2 API
+// @version 1.0
+// @description This is a library management API built with Echo and GORM.
+// @host localhost:8080
+// @BasePath /
+
+// Package main ...
 package main
 
 import (
@@ -11,7 +18,10 @@ import (
 	"net/http"
 	"os"
 
+	_ "gc2/docs" // auto-generated docs from swag
+
 	"github.com/labstack/echo/v4"
+	echoSwagger "github.com/swaggo/echo-swagger" // Echo middleware for Swagger UI
 )
 
 func main() {
@@ -21,6 +31,7 @@ func main() {
 	db := config.DBInit()
 
 	e := echo.New()
+	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
 	//User
 	userRepo := repository.NewUserRepository(db)
@@ -36,6 +47,11 @@ func main() {
 	loanRepo := repository.NewLoanRepository(db)
 	loanService := service.NewLoanService(loanRepo)
 	loanHandler := handler.NewLoanHandler(loanService)
+
+	// Admin
+	adminRepo := repository.NewAdminRepository(db)
+	adminService := service.NewAdminService(adminRepo)
+	adminHandler := handler.NewAdminHandler(adminService)
 
 	// Testing
 	e.GET("/", func(c echo.Context) error {
@@ -56,6 +72,12 @@ func main() {
 	// Group loan
 	loanGroup := e.Group("/loans")
 	loanGroup.POST("", loanHandler.CreateLoan, middleware.JWTMiddleware((os.Getenv("JWT_SECRET"))))
+
+	// Group admin
+	adminGroup := e.Group("/admin")
+	adminGroup.GET("/authors", adminHandler.GetAuthors)
+	adminGroup.GET("/genres", adminHandler.GetGenres)
+	adminGroup.GET("/users", adminHandler.GetTopUsers)
 
 	db.AutoMigrate(
 		&model.Author{},

@@ -47,3 +47,24 @@ type GenreBasic struct {
 	ID   uint   `json:"id"`
 	Name string `json:"name"`
 }
+
+// Admin Responses
+type AuthorAggResponse struct {
+	ID        uint   `json:"id"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	BookCount int    `json:"book_count"`
+}
+
+type GenreAggResponse struct {
+	ID        uint   `json:"id"`
+	Name      string `json:"name"`
+	LoanCount int    `json:"loan_count"`
+}
+
+type TopUserResponse struct {
+	ID        uint   `json:"id"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	LoanCount int    `json:"loan_count"`
+}
